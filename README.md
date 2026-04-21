@@ -1,39 +1,27 @@
-# 💻 Code Comment Generator
+# 💻 Code Comment Generator (NLP Based)
 
-An intelligent tool that automatically generates inline comments for Python code.
+An NLP-based tool that generates inline comments for Python code.
 
 ---
 
 ## 🚀 Features
 
-- Generates comments for each line of code
-- Explains functions, loops, conditions, and variables
+- Generates comments for each line
+- Uses NLP tokenization (NLTK)
+- Detects loops, functions, conditions
 - Improves code readability
-- Beginner-friendly interface
 
 ---
 
-## 🧠 How It Works
-
-The system analyzes code line-by-line and detects patterns such as:
-- Function definitions
-- Loops
-- Conditional statements
-- Assignments
-- Output statements
-
-It then generates meaningful comments for each line.
-
----
-
-## 🏗️ Tech Stack
+## 🧠 Tech Stack
 
 - Python
 - Streamlit
+- NLTK (NLP)
 
 ---
 
-## ▶️ Run the Project
+## ▶️ Run Project
 
 pip install -r requirements.txt  
 streamlit run app.py
@@ -42,15 +30,15 @@ streamlit run app.py
 
 ## 🎯 Example
 
-### Input:
-def add(a, b):
-    return a + b
+Input:
+for i in range(5):
+    print(i)
 
-### Output:
-# Defines function 'add'
-def add(a, b):
-# Returns the result
-    return a + b
+Output:
+# Loop used for iteration
+for i in range(5):
+# Displays output
+    print(i)
 
 ---
 

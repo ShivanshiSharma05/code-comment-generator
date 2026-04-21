@@ -1,45 +1,12 @@
-# -------------------------------
-# 🔹 LINE EXPLANATION FUNCTION
-# -------------------------------
-def explain_line(line: str):
-    line = line.strip()
+import nltk
+from nltk.tokenize import word_tokenize
 
-    if line.startswith("def"):
-        name = line.split("(")[0].replace("def", "").strip()
-        return f"# Defines function '{name}'"
-
-    elif line.startswith("for"):
-        return "# Loop iterates over a sequence"
-
-    elif line.startswith("while"):
-        return "# While loop runs until condition is true"
-
-    elif line.startswith("if"):
-        return "# Checks a condition"
-
-    elif line.startswith("elif"):
-        return "# Checks another condition"
-
-    elif line.startswith("else"):
-        return "# Executes if above conditions fail"
-
-    elif "return" in line:
-        return "# Returns the result"
-
-    elif "print" in line:
-        return "# Prints output to console"
-
-    elif "=" in line and "==" not in line:
-        return "# Assigns value to a variable"
-
-    elif "import" in line:
-        return "# Imports a module"
-
-    return "# Executes this line"
-
+# Download tokenizer (runs once)
+nltk.download('punkt')
+nltk.download('punkt_tab')
 
 # -------------------------------
-# 🔹 MAIN FUNCTION
+# 🔹 NLP COMMENT GENERATOR
 # -------------------------------
 def generate_comments_inline(code: str):
     lines = code.split("\n")
@@ -52,7 +19,56 @@ def generate_comments_inline(code: str):
             result.append("")
             continue
 
-        comment = explain_line(stripped)
+        comment = "# "
+
+        # FUNCTION
+        if stripped.startswith("def"):
+            name = stripped.split("(")[0].replace("def", "").strip()
+            comment += f"Defines function '{name}'"
+
+        # LOOP
+        elif stripped.startswith("for"):
+            comment += "Starts a loop to iterate over a sequence"
+
+        elif stripped.startswith("while"):
+            comment += "Starts a loop that runs while condition is true"
+
+        # CONDITION
+        elif stripped.startswith("if"):
+            comment += "Checks a condition"
+
+        elif stripped.startswith("elif"):
+            comment += "Checks another condition if previous was false"
+
+        elif stripped.startswith("else"):
+            comment += "Executes when all above conditions are false"
+
+        # RETURN
+        elif "return" in stripped:
+            value = stripped.replace("return", "").strip()
+            comment += f"Returns value {value}"
+
+        # PRINT
+        elif "print" in stripped:
+            comment += "Prints output to console"
+
+        # ASSIGNMENT
+        elif "=" in stripped and "==" not in stripped:
+            var, val = stripped.split("=", 1)
+            comment += f"Assigns value {val.strip()} to variable '{var.strip()}'"
+
+        # APPEND
+        elif "append" in stripped:
+            comment += "Adds element to list"
+
+        # INPUT
+        elif "input" in stripped:
+            comment += "Takes input from user"
+
+        # DEFAULT
+        else:
+            comment += "Performs an operation"
+
         result.append(comment)
         result.append(line)
 
