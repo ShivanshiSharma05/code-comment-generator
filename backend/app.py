@@ -1,93 +1,130 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import re
 import os
+import re
 
 app = Flask(__name__)
 CORS(app)
 
 
-# 🔍 FINAL ROBUST LANGUAGE DETECTION
+# 🔍 LANGUAGE DETECTION
 def detect_language(code):
     code_lower = code.lower()
 
     if "#include" in code_lower or "std::" in code_lower or "cout" in code_lower:
         return "C++"
-
     if "def " in code_lower and ":" in code_lower:
         return "Python"
-
     if "public class" in code_lower:
         return "Java"
-
     return "General"
 
 
-# 🔥 FINAL COMMENT GENERATOR
+# 🧠 SMART ALGORITHM DETECTION
+def detect_algorithm(code):
+    code_lower = code.lower()
+
+    if "priority_queue" in code_lower or "dijkstra" in code_lower:
+        return "Graph Shortest Path (Dijkstra)"
+    if "bfs" in code_lower or "queue" in code_lower:
+        return "Breadth First Search (BFS)"
+    if "dfs" in code_lower or "recursive" in code_lower:
+        return "Depth First Search (DFS)"
+    if "dp" in code_lower or "memo" in code_lower:
+        return "Dynamic Programming"
+    if "binary search" in code_lower:
+        return "Binary Search"
+    if "clonegraph" in code_lower:
+        return "Graph Cloning using DFS + HashMap"
+
+    return "General Algorithm"
+
+
+# 🔥 COMMENT GENERATOR
 def generate_comments(code, language, mode="short"):
     lines = code.split("\n")
     output = []
 
-    # Header (only detailed mode)
+    algo_name = detect_algorithm(code)
+
+    # Header
     if mode == "detailed":
         output.append(f"// Language: {language}")
-        output.append("// Dijkstra's Algorithm using priority queue (min-heap)\n")
+        output.append(f"// Algorithm: {algo_name}\n")
 
     for line in lines:
         stripped = line.strip()
         comment = ""
 
-        # -------- SHORT MODE --------
+        # ---------------- SHORT MODE ----------------
         if mode == "short":
 
             if "#include" in stripped:
                 comment = "// Libraries"
-
             elif "while" in stripped:
                 comment = "// Loop"
-
-            elif "for (" in stripped:
+            elif "for (" in stripped or "for(" in stripped:
                 comment = "// Loop"
-
-            elif "if (" in stripped:
+            elif "if" in stripped:
                 comment = "// Condition"
-
             elif "return" in stripped:
                 comment = "// Return"
 
-        # -------- DETAILED MODE --------
+        # ---------------- DETAILED MODE ----------------
         else:
 
             if "#include" in stripped:
-                comment = "// Includes necessary libraries"
+                comment = "// Import required libraries"
+
+            elif "class" in stripped:
+                comment = "// Define class structure"
+
+            elif "def " in stripped:
+                comment = "// Function definition"
 
             elif "priority_queue" in stripped:
-                comment = "// Min-heap to get node with smallest distance"
+                comment = "// Min-heap for efficient minimum retrieval"
 
-            elif "vector<int> dist" in stripped:
-                comment = "// Distance array initialized to infinity"
+            elif "queue" in stripped:
+                comment = "// Queue for BFS traversal"
 
-            elif "pq.push({0, src})" in stripped:
-                comment = "// Start from source node"
+            elif "stack" in stripped:
+                comment = "// Stack for DFS / backtracking"
 
-            elif "while (!pq.empty())" in stripped:
-                comment = "// Process nodes until queue is empty"
+            elif "unordered_map" in stripped or "map" in stripped:
+                comment = "// HashMap for storing visited/mapping values"
 
-            elif "if (d > dist[u])" in stripped:
-                comment = "// Ignore outdated distance"
+            elif "vector" in stripped or "list" in stripped:
+                comment = "// Data structure to store elements"
 
-            elif "for (auto& edge" in stripped:
-                comment = "// Traverse neighbors of current node"
+            elif "for" in stripped:
+                comment = "// Iterate through elements"
 
-            elif "dist[v] = dist[u] + weight" in stripped:
-                comment = "// Relax edge and update distance"
+            elif "while" in stripped:
+                comment = "// Loop until condition is met"
 
-            elif "pq.push" in stripped:
-                comment = "// Push updated distance"
+            elif "if" in stripped:
+                comment = "// Conditional check"
 
-            elif "return dist" in stripped:
-                comment = "// Return shortest distances"
+            elif "return" in stripped:
+                comment = "// Return final result"
 
+            elif "visited" in stripped:
+                comment = "// Track visited nodes"
+
+            elif "dist" in stripped:
+                comment = "// Store distances from source"
+
+            elif "push" in stripped:
+                comment = "// Insert element into data structure"
+
+            elif "pop" in stripped:
+                comment = "// Remove element from structure"
+
+            elif "neighbors" in stripped:
+                comment = "// Traverse connected nodes"
+
+        # Add comment + code
         if comment:
             output.append(comment)
 
@@ -110,8 +147,7 @@ def generate():
     language = data.get("language", "")
     mode = data.get("mode", "short")
 
-    # 🔥 FIXED AUTO DETECT
-    if not language or language == "":
+    if not language:
         language = detect_language(code)
 
     result = generate_comments(code, language, mode)
