@@ -1,43 +1,80 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import os
+import re
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 # ---------------- LANGUAGE DETECTION ----------------
 def detect_language(code):
-    code_lower = code.lower()
+    c = code.lower()
 
-    if "#include" in code_lower or "cout" in code_lower or "unordered_map" in code_lower:
+    if "#include" in c or "std::" in c or "cout" in c:
         return "C++"
-
-    if "def " in code_lower and ":" in code_lower:
+    if "def " in c or "print(" in c:
         return "Python"
-
-    if "public class" in code_lower:
+    if "public class" in c:
         return "Java"
 
     return "General"
 
 
-# ---------------- ALGORITHM DETECTION ----------------
+# ---------------- SMART ALGORITHM DETECTION (SCORING BASED) ----------------
 def detect_algorithm(code):
-    if "priority_queue" in code:
-        return [
-            "// Algorithm: Dijkstra's Shortest Path",
-            "// Approach: Greedy + Min Heap",
-            "// Time Complexity: O(E log V)\n"
-        ]
+    c = code.lower()
 
-    if "cloneGraph" in code or "neighbors" in code:
-        return [
-            "// Algorithm: Graph Cloning (DFS + Recursion)",
-            "// Approach: Depth First Search + HashMap",
-            "// Time Complexity: O(V + E)\n"
-        ]
+    scores = {
+        "BFS (Graph/Grid Traversal)": 0,
+        "DFS (Recursive/Backtracking)": 0,
+        "Dynamic Programming": 0,
+        "Dijkstra / Shortest Path": 0,
+        "Binary Search": 0,
+        "HashMap / Counting": 0,
+        "Greedy Algorithm": 0
+    }
 
-    return ["// Algorithm: General Problem\n"]
+    # BFS signals
+    if "queue" in c:
+        scores["BFS (Graph/Grid Traversal)"] += 2
+    if "dx" in c or "dy" in c:
+        scores["BFS (Graph/Grid Traversal)"] += 2
+    if "grid" in c or "matrix" in c:
+        scores["BFS (Graph/Grid Traversal)"] += 1
+
+    # DFS signals
+    if "dfs" in c or "recursive" in c:
+        scores["DFS (Recursive/Backtracking)"] += 3
+
+    # DP signals
+    if "dp" in c or "memo" in c or "cache" in c:
+        scores["Dynamic Programming"] += 3
+
+    # Dijkstra signals
+    if "priority_queue" in c or "dijkstra" in c:
+        scores["Dijkstra / Shortest Path"] += 3
+
+    # Binary search
+    if "mid" in c and "low" in c and "high" in c:
+        scores["Binary Search"] += 3
+
+    # HashMap / counting
+    if "unordered_map" in c or "map" in c or "dict" in c:
+        scores["HashMap / Counting"] += 2
+
+    # Greedy
+    if "sort" in c and "if" in c:
+        scores["Greedy Algorithm"] += 1
+
+    # Pick best match
+    best = max(scores, key=scores.get)
+
+    # If everything is zero
+    if scores[best] == 0:
+        return "General Algorithm"
+
+    return best
 
 
 # ---------------- COMMENT GENERATOR ----------------
@@ -45,65 +82,52 @@ def generate_comments(code, language, mode="short"):
     lines = code.split("\n")
     output = []
 
-    # Header
+    algo = detect_algorithm(code)
+
+    # HEADER
     if mode == "detailed":
         output.append(f"// Language: {language}")
-        output.extend(detect_algorithm(code))
+        output.append(f"// Algorithm: {algo}\n")
 
     for line in lines:
-        stripped = line.strip()
+        s = line.strip()
         comment = ""
 
-        # SHORT MODE
+        # ---------------- SHORT MODE ----------------
         if mode == "short":
-
-            if "#include" in stripped:
-                comment = "// Libraries"
-
-            elif "while" in stripped:
+            if "#include" in s:
+                comment = "// Import libraries"
+            elif "for" in s or "while" in s:
                 comment = "// Loop"
-
-            elif "for" in stripped:
-                comment = "// Loop"
-
-            elif "if" in stripped:
+            elif "if" in s:
                 comment = "// Condition"
-
-            elif "return" in stripped:
+            elif "return" in s:
                 comment = "// Return"
 
-        # DETAILED MODE
+        # ---------------- DETAILED MODE ----------------
         else:
-
-            if "#include" in stripped:
-                comment = "// Standard libraries"
-
-            elif "priority_queue" in stripped:
-                comment = "// Min heap for shortest path"
-
-            elif "unordered_map" in stripped:
-                comment = "// HashMap for visited nodes"
-
-            elif "pq.push" in stripped:
-                comment = "// Push into priority queue"
-
-            elif "while (!pq.empty())" in stripped:
-                comment = "// Process all nodes"
-
-            elif "if (d > dist[u])" in stripped:
-                comment = "// Skip outdated path"
-
-            elif "for (auto" in stripped:
-                comment = "// Traverse neighbors"
-
-            elif "cloneGraph" in stripped:
-                comment = "// DFS graph cloning"
-
-            elif "new Node" in stripped:
-                comment = "// Create cloned node"
-
-            elif "return" in stripped:
-                comment = "// Return result"
+            if "#include" in s:
+                comment = "// Import required libraries"
+            elif "class" in s:
+                comment = "// Define class"
+            elif "def " in s:
+                comment = "// Function definition"
+            elif "for" in s:
+                comment = "// Iterate over elements"
+            elif "while" in s:
+                comment = "// Loop until condition fails"
+            elif "if" in s:
+                comment = "// Conditional check"
+            elif "return" in s:
+                comment = "// Return final result"
+            elif "queue" in s:
+                comment = "// Queue used for traversal (BFS style)"
+            elif "stack" in s:
+                comment = "// Stack used for DFS/backtracking"
+            elif "unordered_map" in s or "map" in s:
+                comment = "// HashMap for fast lookup"
+            elif "vector" in s or "list" in s:
+                comment = "// Data structure for storing elements"
 
         if comment:
             output.append(comment)
@@ -113,7 +137,7 @@ def generate_comments(code, language, mode="short"):
     return "\n".join(output)
 
 
-# ---------------- API ----------------
+# ---------------- ROUTES ----------------
 @app.route("/")
 def home():
     return "Backend running"
@@ -121,20 +145,24 @@ def home():
 
 @app.route("/generate", methods=["POST"])
 def generate():
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    code = data.get("code", "")
-    language = data.get("language", "")
-    mode = data.get("mode", "short")
+        code = data.get("code", "")
+        language = data.get("language", "")
+        mode = data.get("mode", "short")
 
-    if not language:
-        language = detect_language(code)
+        if not language:
+            language = detect_language(code)
 
-    result = generate_comments(code, language, mode)
+        result = generate_comments(code, language, mode)
 
-    return jsonify({"comment": result})
+        return jsonify({"comment": result})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
