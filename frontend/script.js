@@ -12,7 +12,7 @@ async function generate() {
   outputBox.value = "🤖 AI is thinking...";
 
   try {
-    const res = await fetch("https://code-comment-backend-cjah.onrender.com", {
+    const res = await fetch(" https://code-comment-backend-cjah.onrender.com", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

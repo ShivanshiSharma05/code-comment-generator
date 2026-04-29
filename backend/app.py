@@ -1,130 +1,110 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
-import re
 
 app = Flask(__name__)
 CORS(app)
 
 
-# 🔍 LANGUAGE DETECTION
+# ---------------- LANGUAGE DETECTION ----------------
 def detect_language(code):
     code_lower = code.lower()
 
-    if "#include" in code_lower or "std::" in code_lower or "cout" in code_lower:
+    if "#include" in code_lower or "cout" in code_lower or "unordered_map" in code_lower:
         return "C++"
+
     if "def " in code_lower and ":" in code_lower:
         return "Python"
+
     if "public class" in code_lower:
         return "Java"
+
     return "General"
 
 
-# 🧠 SMART ALGORITHM DETECTION
+# ---------------- ALGORITHM DETECTION ----------------
 def detect_algorithm(code):
-    code_lower = code.lower()
+    if "priority_queue" in code:
+        return [
+            "// Algorithm: Dijkstra's Shortest Path",
+            "// Approach: Greedy + Min Heap",
+            "// Time Complexity: O(E log V)\n"
+        ]
 
-    if "priority_queue" in code_lower or "dijkstra" in code_lower:
-        return "Graph Shortest Path (Dijkstra)"
-    if "bfs" in code_lower or "queue" in code_lower:
-        return "Breadth First Search (BFS)"
-    if "dfs" in code_lower or "recursive" in code_lower:
-        return "Depth First Search (DFS)"
-    if "dp" in code_lower or "memo" in code_lower:
-        return "Dynamic Programming"
-    if "binary search" in code_lower:
-        return "Binary Search"
-    if "clonegraph" in code_lower:
-        return "Graph Cloning using DFS + HashMap"
+    if "cloneGraph" in code or "neighbors" in code:
+        return [
+            "// Algorithm: Graph Cloning (DFS + Recursion)",
+            "// Approach: Depth First Search + HashMap",
+            "// Time Complexity: O(V + E)\n"
+        ]
 
-    return "General Algorithm"
+    return ["// Algorithm: General Problem\n"]
 
 
-# 🔥 COMMENT GENERATOR
+# ---------------- COMMENT GENERATOR ----------------
 def generate_comments(code, language, mode="short"):
     lines = code.split("\n")
     output = []
 
-    algo_name = detect_algorithm(code)
-
     # Header
     if mode == "detailed":
         output.append(f"// Language: {language}")
-        output.append(f"// Algorithm: {algo_name}\n")
+        output.extend(detect_algorithm(code))
 
     for line in lines:
         stripped = line.strip()
         comment = ""
 
-        # ---------------- SHORT MODE ----------------
+        # SHORT MODE
         if mode == "short":
 
             if "#include" in stripped:
                 comment = "// Libraries"
+
             elif "while" in stripped:
                 comment = "// Loop"
-            elif "for (" in stripped or "for(" in stripped:
+
+            elif "for" in stripped:
                 comment = "// Loop"
+
             elif "if" in stripped:
                 comment = "// Condition"
+
             elif "return" in stripped:
                 comment = "// Return"
 
-        # ---------------- DETAILED MODE ----------------
+        # DETAILED MODE
         else:
 
             if "#include" in stripped:
-                comment = "// Import required libraries"
-
-            elif "class" in stripped:
-                comment = "// Define class structure"
-
-            elif "def " in stripped:
-                comment = "// Function definition"
+                comment = "// Standard libraries"
 
             elif "priority_queue" in stripped:
-                comment = "// Min-heap for efficient minimum retrieval"
+                comment = "// Min heap for shortest path"
 
-            elif "queue" in stripped:
-                comment = "// Queue for BFS traversal"
+            elif "unordered_map" in stripped:
+                comment = "// HashMap for visited nodes"
 
-            elif "stack" in stripped:
-                comment = "// Stack for DFS / backtracking"
+            elif "pq.push" in stripped:
+                comment = "// Push into priority queue"
 
-            elif "unordered_map" in stripped or "map" in stripped:
-                comment = "// HashMap for storing visited/mapping values"
+            elif "while (!pq.empty())" in stripped:
+                comment = "// Process all nodes"
 
-            elif "vector" in stripped or "list" in stripped:
-                comment = "// Data structure to store elements"
+            elif "if (d > dist[u])" in stripped:
+                comment = "// Skip outdated path"
 
-            elif "for" in stripped:
-                comment = "// Iterate through elements"
+            elif "for (auto" in stripped:
+                comment = "// Traverse neighbors"
 
-            elif "while" in stripped:
-                comment = "// Loop until condition is met"
+            elif "cloneGraph" in stripped:
+                comment = "// DFS graph cloning"
 
-            elif "if" in stripped:
-                comment = "// Conditional check"
+            elif "new Node" in stripped:
+                comment = "// Create cloned node"
 
             elif "return" in stripped:
-                comment = "// Return final result"
+                comment = "// Return result"
 
-            elif "visited" in stripped:
-                comment = "// Track visited nodes"
-
-            elif "dist" in stripped:
-                comment = "// Store distances from source"
-
-            elif "push" in stripped:
-                comment = "// Insert element into data structure"
-
-            elif "pop" in stripped:
-                comment = "// Remove element from structure"
-
-            elif "neighbors" in stripped:
-                comment = "// Traverse connected nodes"
-
-        # Add comment + code
         if comment:
             output.append(comment)
 
@@ -133,7 +113,7 @@ def generate_comments(code, language, mode="short"):
     return "\n".join(output)
 
 
-# 🌐 ROUTES
+# ---------------- API ----------------
 @app.route("/")
 def home():
     return "Backend running"
@@ -152,11 +132,9 @@ def generate():
 
     result = generate_comments(code, language, mode)
 
-    return jsonify({
-        "comment": result
-    })
+    return jsonify({"comment": result})
 
 
-# 🚀 RUN SERVER
+# ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=5000, debug=True)
