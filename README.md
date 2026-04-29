@@ -1,47 +1,42 @@
-# 💻 Code Comment Generator (NLP Based)
+# 🚀 AI Code Documentation Generator
 
-An NLP-based tool that generates inline comments for Python code.
+An NLP-powered web application that generates meaningful comments for source code using CodeT5.
 
----
+## 🌐 Live Demo
+(Add your deployed links here)
 
-## 🚀 Features
+## 💡 Features
+- 🤖 NLP-based comment generation (CodeT5)
+- ⚡ Real-time output
+- 🎯 Supports C++, Python, Java
+- 🔍 Auto language detection
+- 📝 Short & detailed modes
+- 🌐 Full-stack web app
 
-- Generates comments for each line
-- Uses NLP tokenization (NLTK)
-- Detects loops, functions, conditions
-- Improves code readability
+## 🛠 Tech Stack
+- Python (Flask)
+- HuggingFace Transformers (CodeT5)
+- HTML, CSS, JavaScript
 
----
+## 📁 Project Structure
+backend/ → Flask API  
+frontend/ → UI  
 
-## 🧠 Tech Stack
+## ▶️ Run Locally
 
-- Python
-- Streamlit
-- NLTK (NLP)
+### Backend
+pip install -r requirements.txt
+python backend/app.py
 
----
 
-## ▶️ Run Project
+### Frontend
+Open:
+frontend/index.html
 
-pip install -r requirements.txt  
-streamlit run app.py
 
----
+## 🚀 Deployment
+- Backend → Render
+- Frontend → Netlify
 
-## 🎯 Example
-
-Input:
-for i in range(5):
-    print(i)
-
-Output:
-# Loop used for iteration
-for i in range(5):
-# Displays output
-    print(i)
-
----
-
-## 👨‍💻 Author
-
+## 👩‍💻 Author
 Shivanshi Sharma

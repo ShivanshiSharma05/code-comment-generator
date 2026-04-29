@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Code Documentation Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <h1>🤖 AI Code Documentation Generator</h1>
+</nav>
+
+<section class="hero">
+  <h2>Generate clean comments instantly</h2>
+  <p>C++ | Python | Java</p>
+</section>
+
+<div class="container">
+
+  <!-- Input Panel -->
+  <div class="panel">
+    <h3>💻 Your Code</h3>
+
+    <div class="controls">
+      <select id="language">
+        <option value="">Auto Detect</option>
+        <option value="C++">C++</option>
+        <option value="Python">Python</option>
+        <option value="Java">Java</option>
+      </select>
+
+      <select id="mode">
+        <option value="short">Short</option>
+        <option value="detailed">Detailed</option>
+      </select>
+    </div>
+
+    <textarea id="codeInput" placeholder="Paste your code here..."></textarea>
+
+    <button onclick="generate()">✨ Generate Comments</button>
+  </div>
+
+  <!-- Output Panel -->
+  <div class="panel">
+    <h3>🧠 Generated Comments</h3>
+
+    <textarea id="output" readonly></textarea>
+
+    <button onclick="copyText()">📋 Copy</button>
+  </div>
+
+</div>
+
+<footer>
+  <p>Made by Shivanshi Sharma 🚀</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
